@@ -1,0 +1,50 @@
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: chores_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-chores_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chores_password}
+      POSTGRES_DB: ${POSTGRES_DB:-chores_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - chores_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chores_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: chores_backend
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-chores_user}:${POSTGRES_PASSWORD:-chores_password}@db:5432/${POSTGRES_DB:-chores_db}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-change-in-production}
+      HOST: ${HOST:-192.168.170.53}
+      PORT: ${PORT:-8001}
+    volumes:
+      - ./backend:/app
+      - ./frontend:/app/frontend
+    ports:
+      - "192.168.170.53:8001:8001"
+    networks:
+      - chores_network
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+
+volumes:
+  postgres_data:
+
+networks:
+  chores_network:
+    driver: bridge
