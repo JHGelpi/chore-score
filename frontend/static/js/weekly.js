@@ -81,16 +81,30 @@ function renderWeeklyGrid() {
 
     weeklyData.chores.forEach(chore => {
         if (chore.is_completed && chore.completed_at) {
-            // If completed, only show on the day it was completed
-            const completedDate = new Date(chore.completed_at);
-            const completedDayOfWeek = completedDate.getDay();
-            // Convert Sunday (0) to 6, and shift Monday-Saturday (1-6) to 0-5
-            const dayIndex = completedDayOfWeek === 0 ? 6 : completedDayOfWeek - 1;
-            choresByDay[dayIndex].push(chore);
+            // For completed chores:
+            // If they have a specific assigned day, keep them in that day
+            // If they don't have a specific day (show on all days), only show on completion day
+
+            if (chore.day_of_week !== null && chore.day_of_week !== undefined) {
+                // Has assigned day - keep it there
+                if (chore.frequency === 'twice_weekly') {
+                    choresByDay[chore.day_of_week].push(chore);
+                    if (chore.day_of_week_2 !== null && chore.day_of_week_2 !== undefined) {
+                        choresByDay[chore.day_of_week_2].push(chore);
+                    }
+                } else {
+                    choresByDay[chore.day_of_week].push(chore);
+                }
+            } else {
+                // No assigned day - show only on the day it was completed
+                const completedDate = new Date(chore.completed_at);
+                const completedDayOfWeek = completedDate.getDay();
+                const dayIndex = completedDayOfWeek === 0 ? 6 : completedDayOfWeek - 1;
+                choresByDay[dayIndex].push(chore);
+            }
         } else {
-            // If not completed, show on assigned day(s) or all days if no specific day
+            // Incomplete chores - show on assigned day(s) or all days
             if (chore.frequency === 'twice_weekly') {
-                // Show on both days for twice weekly chores
                 if (chore.day_of_week !== null && chore.day_of_week !== undefined) {
                     choresByDay[chore.day_of_week].push(chore);
                 }
@@ -104,6 +118,17 @@ function renderWeeklyGrid() {
                 choresByDay.forEach(day => day.push(chore));
             }
         }
+    });
+
+    // Sort each day's chores: incomplete first, completed last
+    choresByDay.forEach(dayChores => {
+        dayChores.sort((a, b) => {
+            // If one is completed and the other isn't, completed goes to bottom
+            if (a.is_completed && !b.is_completed) return 1;
+            if (!a.is_completed && b.is_completed) return -1;
+            // Otherwise maintain original order
+            return 0;
+        });
     });
 
     // Create day columns
