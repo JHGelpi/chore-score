@@ -39,10 +39,10 @@ def get_chores(
     if assigned_user_id is not None:
         query = query.filter(Chore.assigned_user_id == assigned_user_id)
     if frequency:
-        if frequency not in ['daily', 'weekly', 'monthly']:
+        if frequency not in ['daily', 'weekly', 'twice_weekly', 'monthly']:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid frequency. Must be 'daily', 'weekly', or 'monthly'"
+                detail=f"Invalid frequency. Must be 'daily', 'weekly', 'twice_weekly', or 'monthly'"
             )
         query = query.filter(Chore.frequency == frequency)
 
@@ -90,11 +90,13 @@ def get_weekly_chores(
             "description": chore.description,
             "frequency": chore.frequency,
             "day_of_week": chore.day_of_week,
+            "day_of_week_2": chore.day_of_week_2,
             "assigned_user_id": chore.assigned_user_id,
             "is_completed": completion is not None,
             "completed_at": completion.completed_at if completion else None,
             "completed_by": completion.user_id if completion else None,
-            "completion_notes": completion.notes if completion else None
+            "completion_notes": completion.notes if completion else None,
+            "completion_id": completion.id if completion else None
         })
 
     return {

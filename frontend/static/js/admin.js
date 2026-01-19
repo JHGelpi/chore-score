@@ -225,7 +225,29 @@ function showAddChoreModal() {
     // Populate user dropdown
     populateUserDropdown();
 
+    // Reset day fields visibility
+    toggleDayFields();
+
     document.getElementById('chore-modal').classList.add('active');
+}
+
+function toggleDayFields() {
+    const frequency = document.getElementById('chore-frequency').value;
+    const day1Group = document.getElementById('day-1-group');
+    const day2Group = document.getElementById('day-2-group');
+
+    if (frequency === 'twice_weekly') {
+        day1Group.querySelector('.form-label').textContent = 'First Day *';
+        day1Group.classList.remove('hidden');
+        day2Group.classList.remove('hidden');
+    } else if (frequency === 'weekly') {
+        day1Group.querySelector('.form-label').textContent = 'Day of Week (for weekly chores)';
+        day1Group.classList.remove('hidden');
+        day2Group.classList.add('hidden');
+    } else {
+        day1Group.classList.add('hidden');
+        day2Group.classList.add('hidden');
+    }
 }
 
 function editChore(choreId) {
@@ -238,10 +260,14 @@ function editChore(choreId) {
     document.getElementById('chore-description').value = chore.description || '';
     document.getElementById('chore-frequency').value = chore.frequency;
     document.getElementById('chore-day').value = chore.day_of_week !== null ? chore.day_of_week : '';
+    document.getElementById('chore-day-2').value = chore.day_of_week_2 !== null ? chore.day_of_week_2 : '';
 
     // Populate user dropdown
     populateUserDropdown();
     document.getElementById('chore-assigned-user').value = chore.assigned_user_id || '';
+
+    // Update day fields visibility based on frequency
+    toggleDayFields();
 
     document.getElementById('chore-modal').classList.add('active');
 }
@@ -271,6 +297,7 @@ async function saveChore(event) {
         description: document.getElementById('chore-description').value || null,
         frequency: document.getElementById('chore-frequency').value,
         day_of_week: document.getElementById('chore-day').value ? parseInt(document.getElementById('chore-day').value) : null,
+        day_of_week_2: document.getElementById('chore-day-2').value ? parseInt(document.getElementById('chore-day-2').value) : null,
         assigned_user_id: document.getElementById('chore-assigned-user').value ? parseInt(document.getElementById('chore-assigned-user').value) : null,
         is_active: true
     };

@@ -117,16 +117,30 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Frequency *</label>
-                    <select id="chore-frequency" class="form-select" required>
+                    <select id="chore-frequency" class="form-select" required onchange="toggleDayFields()">
                         <option value="daily">Daily</option>
                         <option value="weekly" selected>Weekly</option>
+                        <option value="twice_weekly">Twice Weekly</option>
                         <option value="monthly">Monthly</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="day-1-group">
                     <label class="form-label">Day of Week (for weekly chores)</label>
                     <select id="chore-day" class="form-select">
                         <option value="">Any day</option>
+                        <option value="0">Monday</option>
+                        <option value="1">Tuesday</option>
+                        <option value="2">Wednesday</option>
+                        <option value="3">Thursday</option>
+                        <option value="4">Friday</option>
+                        <option value="5">Saturday</option>
+                        <option value="6">Sunday</option>
+                    </select>
+                </div>
+                <div class="form-group hidden" id="day-2-group">
+                    <label class="form-label">Second Day (for twice weekly chores)</label>
+                    <select id="chore-day-2" class="form-select">
+                        <option value="">Select day</option>
                         <option value="0">Monday</option>
                         <option value="1">Tuesday</option>
                         <option value="2">Wednesday</option>

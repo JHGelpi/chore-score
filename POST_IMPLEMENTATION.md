@@ -2,3 +2,4 @@
 		- [ ] If a chore completion needs to be undone then clicking on the chore the day it was completed should mark it as undone and repopulate the chore for the rest of the week again.
 - [ ] When a chore is completed the Completed counter and Completion Rate % should update
 - [ ] Twice a week should be a frequency option.  For example: Laundry typically needs to be completed on Wednesday and Saturday.
+

@@ -80,11 +80,29 @@ function renderWeeklyGrid() {
     const choresByDay = [[], [], [], [], [], [], []]; // 7 days
 
     weeklyData.chores.forEach(chore => {
-        if (chore.day_of_week !== null && chore.day_of_week !== undefined) {
-            choresByDay[chore.day_of_week].push(chore);
+        if (chore.is_completed && chore.completed_at) {
+            // If completed, only show on the day it was completed
+            const completedDate = new Date(chore.completed_at);
+            const completedDayOfWeek = completedDate.getDay();
+            // Convert Sunday (0) to 6, and shift Monday-Saturday (1-6) to 0-5
+            const dayIndex = completedDayOfWeek === 0 ? 6 : completedDayOfWeek - 1;
+            choresByDay[dayIndex].push(chore);
         } else {
-            // If no specific day, show in all days
-            choresByDay.forEach(day => day.push(chore));
+            // If not completed, show on assigned day(s) or all days if no specific day
+            if (chore.frequency === 'twice_weekly') {
+                // Show on both days for twice weekly chores
+                if (chore.day_of_week !== null && chore.day_of_week !== undefined) {
+                    choresByDay[chore.day_of_week].push(chore);
+                }
+                if (chore.day_of_week_2 !== null && chore.day_of_week_2 !== undefined) {
+                    choresByDay[chore.day_of_week_2].push(chore);
+                }
+            } else if (chore.day_of_week !== null && chore.day_of_week !== undefined) {
+                choresByDay[chore.day_of_week].push(chore);
+            } else {
+                // If no specific day, show in all days
+                choresByDay.forEach(day => day.push(chore));
+            }
         }
     });
 
@@ -158,26 +176,31 @@ function createChoreElement(chore) {
 }
 
 async function toggleChore(chore) {
-    if (chore.is_completed) {
-        showAlert('This chore is already completed', 'info');
-        return;
-    }
-
     try {
-        // Mark as complete
-        await api.markComplete({
-            chore_id: chore.id,
-            user_id: currentUser.id,
-            notes: ''
-        });
+        if (chore.is_completed) {
+            // Undo completion
+            if (!chore.completion_id) {
+                showAlert('Cannot undo this completion', 'error');
+                return;
+            }
 
-        showAlert(`${chore.name} marked as complete!`, 'success');
+            await api.deleteCompletion(chore.completion_id);
+            showAlert(`${chore.name} marked as incomplete!`, 'success');
+        } else {
+            // Mark as complete
+            await api.markComplete({
+                chore_id: chore.id,
+                user_id: currentUser.id,
+                notes: ''
+            });
+            showAlert(`${chore.name} marked as complete!`, 'success');
+        }
 
         // Reload data
         await loadWeeklyChores();
 
     } catch (error) {
-        showAlert('Failed to mark chore complete: ' + error.message, 'error');
+        showAlert('Failed to update chore: ' + error.message, 'error');
     }
 }
 

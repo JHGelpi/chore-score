@@ -12,8 +12,9 @@ class Chore(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(200), nullable=False, index=True)
     description = Column(Text, nullable=True)
-    frequency = Column(String(20), default="weekly", nullable=False)  # daily, weekly, monthly
+    frequency = Column(String(20), default="weekly", nullable=False)  # daily, weekly, twice_weekly, monthly
     day_of_week = Column(Integer, nullable=True)  # 0-6 for Monday-Sunday
+    day_of_week_2 = Column(Integer, nullable=True)  # Second day for twice_weekly chores
     assigned_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
