@@ -7,14 +7,20 @@
     <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
-    <div class="container">
+    <div class="container text-center" style="margin-top: 100px;">
         <h1>Chores Management App</h1>
-        <p>Welcome to the Chores Management System</p>
-        <div class="status">
-            <p>Status: <span id="api-status">Checking...</span></p>
-        </div>
+        <p>Redirecting to login...</p>
+        <div class="spinner"></div>
     </div>
 
-    <script src="/static/js/main.js"></script>
+    <script>
+        // Redirect to login page or weekly view based on session
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+            window.location.href = '/weekly';
+        } else {
+            window.location.href = '/login';
+        }
+    </script>
 </body>
 </html>

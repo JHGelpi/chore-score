@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Console - Chores App</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-content">
+                <div>
+                    <h1>Admin Console</h1>
+                </div>
+                <nav class="nav">
+                    <a href="/weekly" class="nav-link">Weekly View</a>
+                    <a href="/admin-console" class="nav-link active">Admin</a>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="alert-container"></div>
+
+        <!-- Dashboard Stats -->
+        <h2 class="mb-2">Dashboard Overview</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-value" id="stat-total-users">0</span>
+                <span class="stat-label">Total Users</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="stat-active-chores">0</span>
+                <span class="stat-label">Active Chores</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="stat-this-week">0</span>
+                <span class="stat-label">Completions This Week</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="stat-completion-rate">0%</span>
+                <span class="stat-label">Completion Rate</span>
+            </div>
+        </div>
+
+        <!-- User Management -->
+        <div class="card">
+            <div class="card-header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>User Management</span>
+                    <button onclick="showAddUserModal()" class="btn btn-primary btn-sm">+ Add User</button>
+                </div>
+            </div>
+            <div id="users-loading" class="loading">
+                <div class="spinner"></div>
+                <p>Loading users...</p>
+            </div>
+            <div id="users-table-container" class="hidden"></div>
+        </div>
+
+        <!-- Chore Management -->
+        <div class="card">
+            <div class="card-header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Chore Management</span>
+                    <button onclick="showAddChoreModal()" class="btn btn-primary btn-sm">+ Add Chore</button>
+                </div>
+            </div>
+            <div id="chores-loading" class="loading">
+                <div class="spinner"></div>
+                <p>Loading chores...</p>
+            </div>
+            <div id="chores-table-container" class="hidden"></div>
+        </div>
+    </div>
+
+    <!-- Add/Edit User Modal -->
+    <div id="user-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-header" id="user-modal-title">Add User</h2>
+            <form id="user-form" onsubmit="saveUser(event)">
+                <div class="form-group">
+                    <label class="form-label">Name *</label>
+                    <input type="text" id="user-name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="user-email" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="user-is-admin"> Admin User
+                    </label>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" onclick="closeUserModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Chore Modal -->
+    <div id="chore-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-header" id="chore-modal-title">Add Chore</h2>
+            <form id="chore-form" onsubmit="saveChore(event)">
+                <div class="form-group">
+                    <label class="form-label">Chore Name *</label>
+                    <input type="text" id="chore-name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea id="chore-description" class="form-textarea"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Frequency *</label>
+                    <select id="chore-frequency" class="form-select" required>
+                        <option value="daily">Daily</option>
+                        <option value="weekly" selected>Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Day of Week (for weekly chores)</label>
+                    <select id="chore-day" class="form-select">
+                        <option value="">Any day</option>
+                        <option value="0">Monday</option>
+                        <option value="1">Tuesday</option>
+                        <option value="2">Wednesday</option>
+                        <option value="3">Thursday</option>
+                        <option value="4">Friday</option>
+                        <option value="5">Saturday</option>
+                        <option value="6">Sunday</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Assigned To</label>
+                    <select id="chore-assigned-user" class="form-select">
+                        <option value="">Unassigned</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" onclick="closeChoreModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/admin.js"></script>
+</body>
+</html>

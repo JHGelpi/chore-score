@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Chores - Chores App</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-content">
+                <div>
+                    <h1>Weekly Chores</h1>
+                    <div class="user-info">
+                        <span>Logged in as: <strong id="current-user-name"></strong></span>
+                        <button onclick="logout()" class="btn btn-sm btn-secondary">Switch User</button>
+                    </div>
+                </div>
+                <nav class="nav">
+                    <a href="/weekly" class="nav-link active">Weekly View</a>
+                    <a href="/admin-console" class="nav-link" id="admin-link" style="display:none;">Admin</a>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="alert-container"></div>
+
+        <!-- Week Navigation -->
+        <div class="week-navigation">
+            <button onclick="previousWeek()" class="btn btn-primary">← Previous Week</button>
+            <div class="week-info">
+                <span id="week-display">Week of January 19, 2026</span>
+            </div>
+            <button onclick="nextWeek()" class="btn btn-primary">Next Week →</button>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-value" id="total-chores">0</span>
+                <span class="stat-label">Total Chores</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="completed-chores">0</span>
+                <span class="stat-label">Completed</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="completion-rate">0%</span>
+                <span class="stat-label">Completion Rate</span>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="chores-loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading chores...</p>
+        </div>
+
+        <!-- Weekly Grid -->
+        <div id="weekly-grid" class="weekly-grid hidden"></div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/weekly.js"></script>
+</body>
+</html>

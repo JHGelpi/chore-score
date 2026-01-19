@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from .config import get_settings
 
 settings = get_settings()
@@ -35,14 +36,28 @@ app.include_router(completions.router)
 app.include_router(admin.router)
 
 
-@app.get("/")
-async def root():
-    """Root endpoint - health check."""
-    return {
-        "message": "Chores Management App API",
-        "version": "1.0.0",
-        "status": "running"
-    }
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    """Serve the main page."""
+    return templates.TemplateResponse("index.html", {"request": request})
+
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    """Serve the login page."""
+    return templates.TemplateResponse("login.html", {"request": request})
+
+
+@app.get("/weekly", response_class=HTMLResponse)
+async def weekly_page(request: Request):
+    """Serve the weekly chores page."""
+    return templates.TemplateResponse("weekly.html", {"request": request})
+
+
+@app.get("/admin-console", response_class=HTMLResponse)
+async def admin_page(request: Request):
+    """Serve the admin console page."""
+    return templates.TemplateResponse("admin.html", {"request": request})
 
 
 @app.get("/health")

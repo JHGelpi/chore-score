@@ -3,7 +3,7 @@ Admin API endpoints for administrative functions.
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, text
 from datetime import datetime, timedelta
 from app.database import get_db
 from app.models.user import User
@@ -178,7 +178,7 @@ def admin_health_check(db: Session = Depends(get_db)):
     """
     try:
         # Test database connection
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
 
         # Get some basic counts
         user_count = db.query(User).count()

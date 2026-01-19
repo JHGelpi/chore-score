@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select User - Chores App</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>Chores Management App</h1>
+            <p>Select your profile to continue</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="alert-container"></div>
+
+        <div class="card text-center">
+            <h2 class="card-header">Who's logging in?</h2>
+            <div id="users-loading" class="loading">
+                <div class="spinner"></div>
+                <p>Loading users...</p>
+            </div>
+            <div id="users-grid" class="user-grid hidden"></div>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/login.js"></script>
+</body>
+</html>
