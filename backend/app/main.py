@@ -26,12 +26,13 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 templates = Jinja2Templates(directory="frontend/templates")
 
-# Import and include routers (will be added later)
-# from .routers import users, chores, completions, admin
-# app.include_router(users.router, prefix="/api/users", tags=["users"])
-# app.include_router(chores.router, prefix="/api/chores", tags=["chores"])
-# app.include_router(completions.router, prefix="/api/completions", tags=["completions"])
-# app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
+# Import and include routers
+from .routers import users, chores, completions, admin
+
+app.include_router(users.router)
+app.include_router(chores.router)
+app.include_router(completions.router)
+app.include_router(admin.router)
 
 
 @app.get("/")

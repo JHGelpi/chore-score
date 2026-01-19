@@ -52,9 +52,9 @@ docker-compose exec backend python -m app.utils.create_admin
 ```
 
 6. **Access the application**
-- Main app: http://localhost:8000
-- API docs: http://localhost:8000/docs
-- Admin console: http://localhost:8000/admin
+- Main app: http://localhost:8001
+- API docs: http://localhost:8001/docs
+- Admin console: http://localhost:8001/admin
 
 ### Development Status
 

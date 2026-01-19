@@ -11,9 +11,12 @@ class CompletionBase(BaseModel):
     notes: Optional[str] = None
 
 
-class CompletionCreate(CompletionBase):
+class CompletionCreate(BaseModel):
     """Schema for creating a new completion."""
-    pass
+    chore_id: int
+    user_id: int
+    week_start: Optional[date] = None
+    notes: Optional[str] = None
 
 
 class Completion(CompletionBase):
