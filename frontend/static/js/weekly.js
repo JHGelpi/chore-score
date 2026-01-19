@@ -188,9 +188,13 @@ async function toggleChore(chore) {
             showAlert(`${chore.name} marked as incomplete!`, 'success');
         } else {
             // Mark as complete
+            // Format currentWeekStart as YYYY-MM-DD for the API
+            const weekStartStr = currentWeekStart.toISOString().split('T')[0];
+
             await api.markComplete({
                 chore_id: chore.id,
                 user_id: currentUser.id,
+                week_start: weekStartStr,
                 notes: ''
             });
             showAlert(`${chore.name} marked as complete!`, 'success');
