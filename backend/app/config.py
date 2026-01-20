@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     # Application settings
     week_start_day: str = "monday"
-    timezone: str = "UTC"
+    timezone: str = "America/New_York"  # Eastern timezone
 
     # Optional email settings
     smtp_host: str = "smtp.gmail.com"

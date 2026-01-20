@@ -16,6 +16,7 @@ class CompletionCreate(BaseModel):
     chore_id: int
     user_id: int
     week_start: Optional[date] = None
+    completion_date: Optional[date] = None  # The specific date the chore was completed
     notes: Optional[str] = None
 
 

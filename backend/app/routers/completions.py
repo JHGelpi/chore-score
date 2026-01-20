@@ -5,13 +5,17 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import Optional
-from datetime import date, datetime
+from datetime import date, datetime, time
+from zoneinfo import ZoneInfo
 from app.database import get_db
 from app.models.completion import Completion
 from app.models.chore import Chore
 from app.models.user import User
 from app.schemas.completion import CompletionCreate, Completion as CompletionResponse
 from app.utils.helpers import get_week_start, get_current_week_start
+from app.config import get_settings
+
+settings = get_settings()
 
 router = APIRouter(prefix="/api/completions", tags=["completions"])
 
@@ -93,7 +97,16 @@ def mark_chore_complete(completion: CompletionCreate, db: Session = Depends(get_
         )
 
     # Create completion record
-    db_completion = Completion(**completion.model_dump())
+    completion_data = completion.model_dump(exclude={'completion_date'})
+    db_completion = Completion(**completion_data)
+
+    # Set completed_at to the specific date if provided, otherwise use current time
+    if completion.completion_date:
+        # Convert date to datetime in Eastern timezone (use noon to be in middle of day)
+        tz = ZoneInfo(settings.timezone)
+        naive_dt = datetime.combine(completion.completion_date, time(hour=12))
+        db_completion.completed_at = naive_dt.replace(tzinfo=tz)
+
     db.add(db_completion)
     db.commit()
     db.refresh(db_completion)

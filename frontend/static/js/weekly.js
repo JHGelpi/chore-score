@@ -30,6 +30,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadWeeklyChores();
 });
 
+// Helper function to format date as YYYY-MM-DD in local timezone
+function formatDateLocal(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 async function loadWeeklyChores() {
     const loadingEl = document.getElementById('chores-loading');
     const gridEl = document.getElementById('weekly-grid');
@@ -39,8 +47,8 @@ async function loadWeeklyChores() {
         loadingEl.classList.remove('hidden');
         gridEl.classList.add('hidden');
 
-        // Format date as YYYY-MM-DD
-        const weekStartStr = currentWeekStart.toISOString().split('T')[0];
+        // Format date as YYYY-MM-DD in local timezone
+        const weekStartStr = formatDateLocal(currentWeekStart);
 
         // Fetch weekly chores
         weeklyData = await api.getWeeklyChores(weekStartStr);
@@ -164,7 +172,7 @@ function createDayColumn(dayName, dayIndex, chores) {
         column.appendChild(empty);
     } else {
         chores.forEach(chore => {
-            const choreEl = createChoreElement(chore);
+            const choreEl = createChoreElement(chore, dayIndex);
             column.appendChild(choreEl);
         });
     }
@@ -172,10 +180,10 @@ function createDayColumn(dayName, dayIndex, chores) {
     return column;
 }
 
-function createChoreElement(chore) {
+function createChoreElement(chore, dayIndex) {
     const div = document.createElement('div');
     div.className = `chore-item ${chore.is_completed ? 'completed' : ''}`;
-    div.onclick = () => toggleChore(chore);
+    div.onclick = () => toggleChore(chore, dayIndex);
 
     const name = document.createElement('div');
     name.className = 'chore-name';
@@ -200,7 +208,7 @@ function createChoreElement(chore) {
     return div;
 }
 
-async function toggleChore(chore) {
+async function toggleChore(chore, dayIndex) {
     try {
         if (chore.is_completed) {
             // Undo completion
@@ -213,13 +221,19 @@ async function toggleChore(chore) {
             showAlert(`${chore.name} marked as incomplete!`, 'success');
         } else {
             // Mark as complete
-            // Format currentWeekStart as YYYY-MM-DD for the API
-            const weekStartStr = currentWeekStart.toISOString().split('T')[0];
+            // Calculate the date for the day that was clicked
+            const completionDate = new Date(currentWeekStart);
+            completionDate.setDate(completionDate.getDate() + dayIndex);
+
+            // Format dates as YYYY-MM-DD for the API (using local timezone, not UTC)
+            const weekStartStr = formatDateLocal(currentWeekStart);
+            const completionDateStr = formatDateLocal(completionDate);
 
             await api.markComplete({
                 chore_id: chore.id,
                 user_id: currentUser.id,
                 week_start: weekStartStr,
+                completion_date: completionDateStr,
                 notes: ''
             });
             showAlert(`${chore.name} marked as complete!`, 'success');
