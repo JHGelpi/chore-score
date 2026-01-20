@@ -203,6 +203,14 @@ function createChoreElement(chore, dayIndex) {
         completed.className = 'chore-assigned';
         completed.textContent = '✓ Completed';
         div.appendChild(completed);
+
+        // Add completed by user name if available
+        if (chore.completed_by_name) {
+            const completedBy = document.createElement('div');
+            completedBy.className = 'chore-assigned';
+            completedBy.textContent = `Completed by: ${chore.completed_by_name}`;
+            div.appendChild(completedBy);
+        }
     }
 
     return div;

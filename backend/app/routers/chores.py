@@ -8,6 +8,7 @@ from datetime import date
 from app.database import get_db
 from app.models.chore import Chore
 from app.models.completion import Completion
+from app.models.user import User
 from app.schemas.chore import ChoreCreate, ChoreUpdate, Chore as ChoreResponse
 from app.utils.helpers import get_week_start
 
@@ -84,6 +85,14 @@ def get_weekly_chores(
     result = []
     for chore in chores:
         completion = completion_map.get(chore.id)
+
+        # Get user name if chore was completed
+        completed_by_name = None
+        if completion:
+            user = db.query(User).filter(User.id == completion.user_id).first()
+            if user:
+                completed_by_name = user.name
+
         result.append({
             "id": chore.id,
             "name": chore.name,
@@ -95,6 +104,7 @@ def get_weekly_chores(
             "is_completed": completion is not None,
             "completed_at": completion.completed_at if completion else None,
             "completed_by": completion.user_id if completion else None,
+            "completed_by_name": completed_by_name,
             "completion_notes": completion.notes if completion else None,
             "completion_id": completion.id if completion else None
         })
