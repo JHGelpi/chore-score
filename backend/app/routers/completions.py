@@ -84,28 +84,36 @@ def mark_chore_complete(completion: CompletionCreate, db: Session = Depends(get_
     if completion.week_start is None:
         completion.week_start = get_current_week_start()
 
-    # Check if this chore was already completed this week
-    existing = db.query(Completion).filter(
-        Completion.chore_id == completion.chore_id,
-        Completion.week_start == completion.week_start
-    ).first()
-
-    if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Chore '{chore.name}' was already completed for the week of {completion.week_start}"
-        )
-
     # Create completion record
     completion_data = completion.model_dump(exclude={'completion_date'})
     db_completion = Completion(**completion_data)
 
     # Set completed_at to the specific date if provided, otherwise use current time
+    completion_dt = None
     if completion.completion_date:
         # Convert date to datetime in Eastern timezone (use noon to be in middle of day)
         tz = ZoneInfo(settings.timezone)
         naive_dt = datetime.combine(completion.completion_date, time(hour=12))
-        db_completion.completed_at = naive_dt.replace(tzinfo=tz)
+        completion_dt = naive_dt.replace(tzinfo=tz)
+        db_completion.completed_at = completion_dt
+    else:
+        completion_dt = db_completion.completed_at
+
+    # Check if this chore was already completed on this specific date
+    # For twice-weekly chores, we allow multiple completions per week, but not on the same day
+    if completion_dt:
+        # Check for completion on the same day (not just same week)
+        existing = db.query(Completion).filter(
+            Completion.chore_id == completion.chore_id,
+            Completion.week_start == completion.week_start,
+            func.date(Completion.completed_at) == completion_dt.date()
+        ).first()
+
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Chore '{chore.name}' was already completed on {completion_dt.date()}"
+            )
 
     db.add(db_completion)
     db.commit()

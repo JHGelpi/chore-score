@@ -78,20 +78,28 @@ def get_weekly_chores(
         Completion.week_start == week_start
     ).all()
 
-    # Build completion map
-    completion_map = {c.chore_id: c for c in completions}
+    # Build completion map (chore_id -> list of completions)
+    from collections import defaultdict
+    completion_map = defaultdict(list)
+    for c in completions:
+        completion_map[c.chore_id].append(c)
 
     # Format response
     result = []
     for chore in chores:
-        completion = completion_map.get(chore.id)
+        chore_completions = completion_map.get(chore.id, [])
 
-        # Get user name if chore was completed
-        completed_by_name = None
-        if completion:
+        # Return completions as a list for this chore
+        completions_data = []
+        for completion in chore_completions:
             user = db.query(User).filter(User.id == completion.user_id).first()
-            if user:
-                completed_by_name = user.name
+            completions_data.append({
+                "completed_at": completion.completed_at,
+                "completed_by": completion.user_id,
+                "completed_by_name": user.name if user else None,
+                "notes": completion.notes,
+                "completion_id": completion.id
+            })
 
         result.append({
             "id": chore.id,
@@ -101,18 +109,13 @@ def get_weekly_chores(
             "day_of_week": chore.day_of_week,
             "day_of_week_2": chore.day_of_week_2,
             "assigned_user_id": chore.assigned_user_id,
-            "is_completed": completion is not None,
-            "completed_at": completion.completed_at if completion else None,
-            "completed_by": completion.user_id if completion else None,
-            "completed_by_name": completed_by_name,
-            "completion_notes": completion.notes if completion else None,
-            "completion_id": completion.id if completion else None
+            "completions": completions_data  # Changed to list of completions
         })
 
     return {
         "week_start": week_start,
         "total_chores": len(result),
-        "completed_chores": sum(1 for c in result if c["is_completed"]),
+        "completed_chores": sum(len(c["completions"]) for c in result),
         "chores": result
     }
 
