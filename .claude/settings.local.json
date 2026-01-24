@@ -9,7 +9,12 @@
       "Bash(docker-compose restart:*)",
       "Bash(curl -s http://192.168.170.53:8001/)",
       "Bash(curl -s http://192.168.170.53:8001/login)",
-      "Bash(curl -s http://192.168.170.53:8001/weekly)"
+      "Bash(curl -s http://192.168.170.53:8001/weekly)",
+      "Bash(curl -s \"http://192.168.170.53:8001/api/chores/weekly?frequency=monthly\")",
+      "Bash(curl -s \"http://192.168.170.53:8001/static/js/weekly.js\")",
+      "Bash(curl -s \"http://192.168.170.53:8001/api/chores/weekly\")",
+      "Bash(python3:*)",
+      "Bash(curl -s \"http://192.168.170.53:8001/static/css/styles.css\")"
     ],
     "deny": [],
     "ask": []

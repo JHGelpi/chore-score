@@ -55,6 +55,7 @@ def get_chores(
 def get_weekly_chores(
     week_start: Optional[date] = Query(None, description="Start of the week (defaults to current week)"),
     user_id: Optional[int] = Query(None, description="Filter by assigned user"),
+    frequency: Optional[str] = Query(None, description="Filter by frequency (daily, weekly, twice_weekly, monthly)"),
     db: Session = Depends(get_db)
 ):
     """
@@ -62,6 +63,7 @@ def get_weekly_chores(
 
     - **week_start**: The Monday of the week to view (defaults to current week)
     - **user_id**: Filter chores by assigned user
+    - **frequency**: Filter chores by frequency
     """
     if week_start is None:
         week_start = get_week_start()
@@ -71,7 +73,19 @@ def get_weekly_chores(
     if user_id:
         query = query.filter(Chore.assigned_user_id == user_id)
 
+    if frequency:
+        if frequency not in ['daily', 'weekly', 'twice_weekly', 'monthly']:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid frequency. Must be 'daily', 'weekly', 'twice_weekly', or 'monthly'"
+            )
+        query = query.filter(Chore.frequency == frequency)
+
     chores = query.all()
+
+    # Sort chores by frequency (daily, weekly, twice_weekly, monthly) then alphabetically by name
+    frequency_order = {'daily': 1, 'weekly': 2, 'twice_weekly': 3, 'monthly': 4}
+    chores = sorted(chores, key=lambda c: (frequency_order.get(c.frequency, 5), c.name.lower()))
 
     # Get completions for this week
     completions = db.query(Completion).filter(

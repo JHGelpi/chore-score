@@ -37,6 +37,27 @@
             <button onclick="nextWeek()" class="btn btn-primary">Next Week →</button>
         </div>
 
+        <!-- Filters -->
+        <div class="filters-container">
+            <div class="filter-group">
+                <label for="frequency-filter">Frequency:</label>
+                <select id="frequency-filter" class="filter-select" onchange="applyFilters()">
+                    <option value="">All</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="twice_weekly">Bi-Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="user-filter">Assigned to:</label>
+                <select id="user-filter" class="filter-select" onchange="applyFilters()">
+                    <option value="">All Users</option>
+                </select>
+            </div>
+            <button onclick="clearFilters()" class="btn btn-secondary btn-sm">Clear Filters</button>
+        </div>
+
         <!-- Stats Summary -->
         <div class="stats-grid">
             <div class="stat-card">

@@ -72,11 +72,14 @@ class APIClient {
         return this.request(`/chores${queryString ? '?' + queryString : ''}`);
     }
 
-    async getWeeklyChores(weekStart = null, userId = null) {
+    async getWeeklyChores(weekStart = null, userId = null, frequency = null) {
         const params = new URLSearchParams();
         if (weekStart) params.append('week_start', weekStart);
         if (userId) params.append('user_id', userId);
-        return this.request(`/chores/weekly${params.toString() ? '?' + params.toString() : ''}`);
+        if (frequency) params.append('frequency', frequency);
+        const url = `/chores/weekly${params.toString() ? '?' + params.toString() : ''}`;
+        console.log('API call to:', url);
+        return this.request(url);
     }
 
     async getChore(choreId) {
