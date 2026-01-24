@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chore Completion History - Chores App</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <div class="header-content">
+                <div>
+                    <h1>Chore Completion History</h1>
+                    <div class="user-info">
+                        <span>Logged in as: <strong id="current-user-name"></strong></span>
+                        <button onclick="logout()" class="btn btn-sm btn-secondary">Switch User</button>
+                    </div>
+                </div>
+                <nav class="nav">
+                    <a href="/weekly" class="nav-link">Weekly View</a>
+                    <a href="/history" class="nav-link active">History</a>
+                    <a href="/admin-console" class="nav-link" id="admin-link" style="display:none;">Admin</a>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="alert-container"></div>
+
+        <!-- Chart 1: Completions by User -->
+        <div class="card">
+            <div class="card-header">Completions by User (Last 30 Days)</div>
+            <div class="chart-container">
+                <canvas id="user-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- Chart 2: Completions by Chore -->
+        <div class="card">
+            <div class="card-header">Completions by Chore (Last 30 Days)</div>
+            <div class="form-group">
+                <label class="form-label" for="chore-selector">Select Chore:</label>
+                <select id="chore-selector" class="form-select" onchange="loadChoreChart()">
+                    <option value="">Select a chore...</option>
+                </select>
+            </div>
+            <div class="chart-container">
+                <canvas id="chore-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- Chart 3: 4-Week Rolling Grid -->
+        <div class="card">
+            <div class="card-header">4-Week Completion Grid</div>
+            <div class="form-group">
+                <label class="form-label" for="grid-chore-selector">Select Chore:</label>
+                <select id="grid-chore-selector" class="form-select" onchange="loadCompletionGrid()">
+                    <option value="">Select a chore...</option>
+                </select>
+            </div>
+            <div id="completion-grid-container"></div>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/history.js"></script>
+</body>
+</html>

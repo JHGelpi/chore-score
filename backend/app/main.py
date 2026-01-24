@@ -60,6 +60,12 @@ async def admin_page(request: Request):
     return templates.TemplateResponse("admin.html", {"request": request})
 
 
+@app.get("/history", response_class=HTMLResponse)
+async def history_page(request: Request):
+    """Serve the chore completion history page."""
+    return templates.TemplateResponse("history.html", {"request": request})
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""

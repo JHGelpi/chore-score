@@ -23,10 +23,12 @@ router = APIRouter(prefix="/api/completions", tags=["completions"])
 @router.get("", response_model=list[CompletionResponse])
 def get_completions(
     skip: int = Query(0, ge=0, description="Number of records to skip"),
-    limit: int = Query(100, ge=1, le=100, description="Maximum number of records to return"),
+    limit: int = Query(1000, ge=1, le=10000, description="Maximum number of records to return"),
     chore_id: Optional[int] = Query(None, description="Filter by chore ID"),
     user_id: Optional[int] = Query(None, description="Filter by user ID"),
     week_start: Optional[date] = Query(None, description="Filter by week start date"),
+    start_date: Optional[date] = Query(None, description="Filter by start date (inclusive)"),
+    end_date: Optional[date] = Query(None, description="Filter by end date (inclusive)"),
     db: Session = Depends(get_db)
 ):
     """
@@ -37,6 +39,8 @@ def get_completions(
     - **chore_id**: Filter by chore
     - **user_id**: Filter by user who completed the chore
     - **week_start**: Filter by week start date
+    - **start_date**: Filter by start date (inclusive)
+    - **end_date**: Filter by end date (inclusive)
     """
     query = db.query(Completion)
 
@@ -46,6 +50,10 @@ def get_completions(
         query = query.filter(Completion.user_id == user_id)
     if week_start is not None:
         query = query.filter(Completion.week_start == week_start)
+    if start_date is not None:
+        query = query.filter(func.date(Completion.completed_at) >= start_date)
+    if end_date is not None:
+        query = query.filter(func.date(Completion.completed_at) <= end_date)
 
     # Order by most recent first
     query = query.order_by(Completion.completed_at.desc())

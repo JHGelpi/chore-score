@@ -656,6 +656,92 @@ body {
     min-height: auto;
 }
 
+/* Charts */
+.chart-container {
+    position: relative;
+    height: 400px;
+    margin-top: var(--spacing-lg);
+}
+
+/* Completion Grid */
+.completion-grid {
+    overflow-x: auto;
+    margin-top: var(--spacing-lg);
+}
+
+.grid-row {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+}
+
+.grid-row:last-child {
+    border-bottom: none;
+}
+
+.grid-row.header-row {
+    background-color: var(--primary);
+    color: white;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.grid-cell {
+    padding: var(--spacing-md);
+    text-align: center;
+    border-right: 1px solid var(--border);
+    min-width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.grid-cell:last-child {
+    border-right: none;
+}
+
+.header-cell {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.date-label {
+    font-weight: 700;
+}
+
+.day-label {
+    font-size: 0.75rem;
+    opacity: 0.8;
+}
+
+.user-cell {
+    font-weight: 600;
+    min-width: 120px;
+    text-align: left;
+    background-color: var(--background);
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    border-right: 2px solid var(--border);
+}
+
+.completion-cell {
+    font-size: 1.5rem;
+    min-height: 50px;
+    transition: var(--transition);
+}
+
+.completion-cell.completed {
+    background-color: rgba(126, 211, 33, 0.1);
+}
+
+.completion-cell:hover {
+    background-color: var(--background);
+}
+
 /* Utility Classes */
 .hidden {
     display: none !important;
