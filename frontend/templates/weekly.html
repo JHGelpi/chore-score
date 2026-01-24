@@ -19,6 +19,9 @@
                 </div>
                 <nav class="nav">
                     <a href="/weekly" class="nav-link active">Weekly View</a>
+                    <button onclick="toggleEditMode()" class="nav-link nav-button" id="edit-mode-btn">
+                        <span id="edit-mode-text">Assign Chores</span>
+                    </button>
                     <a href="/admin-console" class="nav-link" id="admin-link" style="display:none;">Admin</a>
                 </nav>
             </div>
@@ -82,6 +85,83 @@
 
         <!-- Weekly Grid -->
         <div id="weekly-grid" class="weekly-grid hidden"></div>
+    </div>
+
+    <!-- Edit Chore Modal -->
+    <div id="edit-chore-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Chore</h2>
+            </div>
+            <form id="edit-chore-form" onsubmit="saveChore(event)">
+                <div class="form-group">
+                    <label class="form-label" for="edit-chore-name">Chore Name *</label>
+                    <input type="text" id="edit-chore-name" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit-chore-description">Description</label>
+                    <textarea id="edit-chore-description" class="form-textarea"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit-chore-frequency">Frequency *</label>
+                    <select id="edit-chore-frequency" class="form-select" required onchange="updateDayFields()">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="twice_weekly">Bi-Weekly (Twice per Week)</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="day-of-week-group">
+                    <label class="form-label" for="edit-chore-day">Day of Week</label>
+                    <select id="edit-chore-day" class="form-select">
+                        <option value="">None</option>
+                        <option value="0">Monday</option>
+                        <option value="1">Tuesday</option>
+                        <option value="2">Wednesday</option>
+                        <option value="3">Thursday</option>
+                        <option value="4">Friday</option>
+                        <option value="5">Saturday</option>
+                        <option value="6">Sunday</option>
+                    </select>
+                </div>
+
+                <div class="form-group hidden" id="day-of-week-2-group">
+                    <label class="form-label" for="edit-chore-day-2">Second Day of Week</label>
+                    <select id="edit-chore-day-2" class="form-select">
+                        <option value="">None</option>
+                        <option value="0">Monday</option>
+                        <option value="1">Tuesday</option>
+                        <option value="2">Wednesday</option>
+                        <option value="3">Thursday</option>
+                        <option value="4">Friday</option>
+                        <option value="5">Saturday</option>
+                        <option value="6">Sunday</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit-chore-assigned">Assigned To</label>
+                    <select id="edit-chore-assigned" class="form-select">
+                        <option value="">Unassigned</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="edit-chore-active" checked>
+                        Active
+                    </label>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" onclick="closeEditModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script src="/static/js/api.js"></script>

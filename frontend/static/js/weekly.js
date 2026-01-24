@@ -10,6 +10,8 @@ let currentFilters = {
     frequency: '',
     userId: ''
 };
+let editMode = false;
+let currentEditChore = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
@@ -60,6 +62,18 @@ async function loadUsers() {
             option.textContent = user.name;
             userFilter.appendChild(option);
         });
+
+        // Populate edit modal assigned user dropdown
+        const assignedSelect = document.getElementById('edit-chore-assigned');
+        if (assignedSelect) {
+            assignedSelect.innerHTML = '<option value="">Unassigned</option>';
+            allUsers.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = user.name;
+                assignedSelect.appendChild(option);
+            });
+        }
     } catch (error) {
         console.error('Failed to load users:', error);
     }
@@ -330,6 +344,12 @@ function createChoreElement(chore, dayIndex, isUserChore = false) {
 }
 
 async function toggleChore(chore, dayIndex) {
+    // If in edit mode, open the edit modal instead
+    if (editMode) {
+        openEditModal(chore);
+        return;
+    }
+
     try {
         if (chore.is_completed) {
             // Undo completion
@@ -377,3 +397,100 @@ function nextWeek() {
     currentWeekStart.setDate(currentWeekStart.getDate() + 7);
     loadWeeklyChores();
 }
+
+// Edit Mode Functions
+function toggleEditMode() {
+    editMode = !editMode;
+    const btn = document.getElementById('edit-mode-btn');
+    const text = document.getElementById('edit-mode-text');
+
+    if (editMode) {
+        btn.classList.add('active');
+        text.textContent = 'Exit Edit Mode';
+        showAlert('Edit mode enabled. Click on any chore to edit it.', 'info');
+    } else {
+        btn.classList.remove('active');
+        text.textContent = 'Assign Chores';
+        showAlert('Edit mode disabled. Click on chores to mark them complete.', 'info');
+    }
+}
+
+function openEditModal(chore) {
+    currentEditChore = chore;
+    const modal = document.getElementById('edit-chore-modal');
+
+    // Populate form fields
+    document.getElementById('edit-chore-name').value = chore.name || '';
+    document.getElementById('edit-chore-description').value = chore.description || '';
+    document.getElementById('edit-chore-frequency').value = chore.frequency || 'weekly';
+    document.getElementById('edit-chore-day').value = chore.day_of_week !== null ? chore.day_of_week : '';
+    document.getElementById('edit-chore-day-2').value = chore.day_of_week_2 !== null ? chore.day_of_week_2 : '';
+    document.getElementById('edit-chore-assigned').value = chore.assigned_user_id || '';
+    document.getElementById('edit-chore-active').checked = chore.is_active !== false;
+
+    // Update day fields visibility based on frequency
+    updateDayFields();
+
+    // Show modal
+    modal.classList.add('active');
+}
+
+function closeEditModal() {
+    const modal = document.getElementById('edit-chore-modal');
+    modal.classList.remove('active');
+    currentEditChore = null;
+}
+
+function updateDayFields() {
+    const frequency = document.getElementById('edit-chore-frequency').value;
+    const dayGroup = document.getElementById('day-of-week-group');
+    const day2Group = document.getElementById('day-of-week-2-group');
+
+    if (frequency === 'twice_weekly') {
+        dayGroup.classList.remove('hidden');
+        day2Group.classList.remove('hidden');
+    } else if (frequency === 'weekly') {
+        dayGroup.classList.remove('hidden');
+        day2Group.classList.add('hidden');
+    } else {
+        dayGroup.classList.add('hidden');
+        day2Group.classList.add('hidden');
+    }
+}
+
+async function saveChore(event) {
+    event.preventDefault();
+
+    if (!currentEditChore) {
+        showAlert('No chore selected for editing', 'error');
+        return;
+    }
+
+    try {
+        const choreData = {
+            name: document.getElementById('edit-chore-name').value,
+            description: document.getElementById('edit-chore-description').value || null,
+            frequency: document.getElementById('edit-chore-frequency').value,
+            day_of_week: document.getElementById('edit-chore-day').value ? parseInt(document.getElementById('edit-chore-day').value) : null,
+            day_of_week_2: document.getElementById('edit-chore-day-2').value ? parseInt(document.getElementById('edit-chore-day-2').value) : null,
+            assigned_user_id: document.getElementById('edit-chore-assigned').value ? parseInt(document.getElementById('edit-chore-assigned').value) : null,
+            is_active: document.getElementById('edit-chore-active').checked
+        };
+
+        await api.updateChore(currentEditChore.id, choreData);
+        showAlert('Chore updated successfully!', 'success');
+        closeEditModal();
+        await loadWeeklyChores();
+
+    } catch (error) {
+        showAlert('Failed to update chore: ' + error.message, 'error');
+    }
+}
+
+// Close modal when clicking outside of it
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('edit-chore-modal');
+    if (event.target === modal) {
+        closeEditModal();
+    }
+});

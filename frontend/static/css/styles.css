@@ -116,6 +116,19 @@ body {
     background-color: var(--primary-dark);
 }
 
+.nav-button {
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+}
+
+.nav-button.active {
+    background-color: var(--warning);
+    color: white;
+    font-weight: 600;
+}
+
 /* Buttons */
 .btn {
     display: inline-block;
@@ -625,6 +638,22 @@ body {
     gap: var(--spacing-md);
     justify-content: flex-end;
     margin-top: var(--spacing-lg);
+}
+
+.modal h2 {
+    margin: 0;
+    color: var(--text);
+}
+
+.form-group label[for] {
+    cursor: pointer;
+}
+
+.form-group input[type="checkbox"] {
+    margin-right: var(--spacing-xs);
+    cursor: pointer;
+    width: auto;
+    min-height: auto;
 }
 
 /* Utility Classes */
