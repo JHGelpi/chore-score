@@ -667,11 +667,19 @@ body {
 .completion-grid {
     overflow-x: auto;
     margin-top: var(--spacing-lg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background-color: var(--surface);
+    /* Fix for color rendering during scroll */
+    -webkit-overflow-scrolling: touch;
+    will-change: scroll-position;
 }
 
 .grid-row {
     display: flex;
     border-bottom: 1px solid var(--border);
+    /* Ensure proper rendering */
+    min-height: 50px;
 }
 
 .grid-row:last-child {
@@ -685,6 +693,9 @@ body {
     position: sticky;
     top: 0;
     z-index: 10;
+    /* Prevent rendering issues on scroll */
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 .grid-cell {
@@ -692,9 +703,14 @@ body {
     text-align: center;
     border-right: 1px solid var(--border);
     min-width: 60px;
+    width: 60px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    /* Force GPU acceleration for smoother rendering */
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 .grid-cell:last-child {
@@ -706,6 +722,7 @@ body {
     font-weight: 600;
     flex-direction: column;
     gap: var(--spacing-xs);
+    background-color: var(--primary);
 }
 
 .date-label {
@@ -720,22 +737,29 @@ body {
 .user-cell {
     font-weight: 600;
     min-width: 120px;
+    width: 120px;
+    flex-shrink: 0;
     text-align: left;
     background-color: var(--background);
     position: sticky;
     left: 0;
     z-index: 5;
     border-right: 2px solid var(--border);
+    /* Prevent rendering issues on scroll */
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
 
 .completion-cell {
     font-size: 1.5rem;
     min-height: 50px;
-    transition: var(--transition);
+    background-color: var(--surface);
+    /* Explicitly set white background for non-completed cells */
 }
 
 .completion-cell.completed {
-    background-color: rgba(126, 211, 33, 0.1);
+    background-color: #d4f4dd;
+    /* Solid light green instead of rgba for better rendering */
 }
 
 .completion-cell:hover {

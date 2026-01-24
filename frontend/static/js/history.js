@@ -300,9 +300,9 @@ async function loadCompletionGrid() {
             chore_id: choreId
         });
 
-        // Create date array for last 28 days
+        // Create date array for last 28 days (most recent first)
         const dates = [];
-        for (let i = 27; i >= 0; i--) {
+        for (let i = 0; i < 28; i++) {
             const date = new Date();
             date.setDate(date.getDate() - i);
             dates.push(date);
