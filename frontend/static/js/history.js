@@ -44,28 +44,45 @@ async function loadChores() {
     try {
         allChores = await api.getChores({ is_active: true });
 
-        // Populate chore selectors
+        // Populate chore selector
         const choreSelector = document.getElementById('chore-selector');
-        const gridChoreSelector = document.getElementById('grid-chore-selector');
-
         choreSelector.innerHTML = '<option value="">Select a chore...</option>';
-        gridChoreSelector.innerHTML = '<option value="">Select a chore...</option>';
 
         allChores.forEach(chore => {
-            const option1 = document.createElement('option');
-            option1.value = chore.id;
-            option1.textContent = chore.name;
-            choreSelector.appendChild(option1);
-
-            const option2 = document.createElement('option');
-            option2.value = chore.id;
-            option2.textContent = chore.name;
-            gridChoreSelector.appendChild(option2);
+            const option = document.createElement('option');
+            option.value = chore.id;
+            option.textContent = chore.name;
+            choreSelector.appendChild(option);
         });
     } catch (error) {
         console.error('Failed to load chores:', error);
         showAlert('Failed to load chores: ' + error.message, 'error');
     }
+}
+
+// New function to load both chart and grid when a chore is selected
+async function loadChoreDetails() {
+    const choreId = document.getElementById('chore-selector').value;
+
+    if (!choreId) {
+        // Hide both sections if no chore selected
+        document.getElementById('chore-chart-card').style.display = 'none';
+        document.getElementById('completion-grid-card').style.display = 'none';
+        if (choreChart) {
+            choreChart.destroy();
+            choreChart = null;
+        }
+        document.getElementById('completion-grid-container').innerHTML = '';
+        return;
+    }
+
+    // Show both sections
+    document.getElementById('chore-chart-card').style.display = 'block';
+    document.getElementById('completion-grid-card').style.display = 'block';
+
+    // Load both visualizations
+    await loadChoreChart();
+    await loadCompletionGrid();
 }
 
 async function loadUserChart() {
@@ -263,7 +280,7 @@ async function loadChoreChart() {
 }
 
 async function loadCompletionGrid() {
-    const choreId = document.getElementById('grid-chore-selector').value;
+    const choreId = document.getElementById('chore-selector').value;
     const container = document.getElementById('completion-grid-container');
 
     if (!choreId) {
