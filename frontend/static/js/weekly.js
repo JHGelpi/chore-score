@@ -248,6 +248,18 @@ function createDayColumn(dayName, dayIndex, userChores, otherChores) {
     const date = new Date(currentWeekStart);
     date.setDate(date.getDate() + dayIndex);
 
+    // Check if this is today's date
+    const today = new Date();
+    const isToday = date.getFullYear() === today.getFullYear() &&
+                    date.getMonth() === today.getMonth() &&
+                    date.getDate() === today.getDate();
+
+    // Add data attribute and ID for today's column
+    if (isToday) {
+        column.setAttribute('data-today', 'true');
+        column.id = 'today-column';
+    }
+
     header.innerHTML = `
         ${dayName}
         <span class="day-date">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
@@ -494,3 +506,69 @@ document.addEventListener('click', function(event) {
         closeEditModal();
     }
 });
+
+/**
+ * Floating scroll button functionality
+ * Shows "Jump to Today" when at top, "Return to Top" when scrolled down
+ */
+let floatingButton = null;
+
+function initFloatingButton() {
+    // Create floating button if it doesn't exist
+    if (!floatingButton) {
+        floatingButton = document.createElement('button');
+        floatingButton.id = 'floating-scroll-btn';
+        floatingButton.className = 'floating-scroll-btn';
+        floatingButton.innerHTML = '<span id="floating-btn-text">Jump to Today</span>';
+        floatingButton.onclick = handleFloatingButtonClick;
+        document.body.appendChild(floatingButton);
+
+        // Add scroll listener to update button state
+        window.addEventListener('scroll', updateFloatingButton);
+    }
+
+    // Initial update
+    updateFloatingButton();
+}
+
+function updateFloatingButton() {
+    if (!floatingButton) return;
+
+    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+    const buttonText = document.getElementById('floating-btn-text');
+
+    // If scrolled down more than 200px, show "Return to Top"
+    if (scrollPosition > 200) {
+        buttonText.textContent = 'Return to Top';
+        floatingButton.setAttribute('data-mode', 'top');
+    } else {
+        buttonText.textContent = 'Jump to Today';
+        floatingButton.setAttribute('data-mode', 'today');
+    }
+}
+
+function handleFloatingButtonClick() {
+    const mode = floatingButton.getAttribute('data-mode');
+
+    if (mode === 'top') {
+        // Scroll to top
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    } else {
+        // Scroll to today's column
+        const todayColumn = document.getElementById('today-column');
+        if (todayColumn) {
+            todayColumn.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'start'
+            });
+        }
+    }
+}
+
+// Initialize floating button when DOM is ready
+// Wait until after initial load to avoid interfering with authentication
+setTimeout(initFloatingButton, 500);
