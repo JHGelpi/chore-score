@@ -106,6 +106,17 @@ class APIClient {
         });
     }
 
+    async getAdhocChoreNames() {
+        return this.request('/chores/adhoc/names');
+    }
+
+    async createAdhocChore(adhocChoreData) {
+        return this.request('/chores/adhoc', {
+            method: 'POST',
+            body: JSON.stringify(adhocChoreData)
+        });
+    }
+
     // Completions
     async markComplete(completionData) {
         return this.request('/completions', {

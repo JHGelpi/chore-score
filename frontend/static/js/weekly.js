@@ -572,3 +572,124 @@ function handleFloatingButtonClick() {
 // Initialize floating button when DOM is ready
 // Wait until after initial load to avoid interfering with authentication
 setTimeout(initFloatingButton, 500);
+
+/**
+ * Adhoc Chore Functions
+ */
+let adhocChoreNames = [];
+
+async function loadAdhocChoreNames() {
+    try {
+        adhocChoreNames = await api.getAdhocChoreNames();
+        updateAdhocSuggestions();
+    } catch (error) {
+        console.error('Failed to load adhoc chore names:', error);
+    }
+}
+
+function updateAdhocSuggestions() {
+    const datalist = document.getElementById('adhoc-suggestions');
+    datalist.innerHTML = '';
+
+    adhocChoreNames.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        datalist.appendChild(option);
+    });
+}
+
+async function openAdhocChoreModal() {
+    try {
+        console.log('Opening adhoc chore modal...');
+        const modal = document.getElementById('adhoc-chore-modal');
+
+        if (!modal) {
+            console.error('Modal element not found!');
+            return;
+        }
+
+        // Load adhoc chore names for autocomplete
+        await loadAdhocChoreNames();
+
+        // Reset form
+        document.getElementById('adhoc-chore-form').reset();
+
+        // Set default date to today
+        const today = new Date();
+        document.getElementById('adhoc-chore-date').valueAsDate = today;
+
+        // Populate user dropdown
+        const userSelect = document.getElementById('adhoc-chore-user');
+        userSelect.innerHTML = '<option value="">Select user...</option>';
+        allUsers.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.id;
+            option.textContent = user.name;
+            if (user.id === currentUser.id) {
+                option.selected = true;
+            }
+            userSelect.appendChild(option);
+        });
+
+        // Show modal
+        console.log('Showing modal...');
+        modal.classList.add('active');
+    } catch (error) {
+        console.error('Error opening adhoc chore modal:', error);
+        showAlert('Failed to open adhoc chore form: ' + error.message, 'error');
+    }
+}
+
+function closeAdhocChoreModal() {
+    const modal = document.getElementById('adhoc-chore-modal');
+    modal.classList.remove('active');
+}
+
+async function saveAdhocChore(event) {
+    event.preventDefault();
+
+    try {
+        const name = document.getElementById('adhoc-chore-name').value.trim();
+        const description = document.getElementById('adhoc-chore-description').value.trim() || null;
+        const dateValue = document.getElementById('adhoc-chore-date').value;
+        const userId = parseInt(document.getElementById('adhoc-chore-user').value);
+        const notes = document.getElementById('adhoc-chore-notes').value.trim() || null;
+
+        // Parse the date
+        const completionDate = new Date(dateValue + 'T12:00:00');
+
+        // Calculate week start for the completion date
+        const weekStart = getWeekStart(completionDate);
+
+        // Format dates as YYYY-MM-DD
+        const completionDateStr = formatDateLocal(completionDate);
+        const weekStartStr = formatDateLocal(weekStart);
+
+        const adhocChoreData = {
+            name: name,
+            description: description,
+            user_id: userId,
+            completion_date: completionDateStr,
+            week_start: weekStartStr,
+            notes: notes
+        };
+
+        await api.createAdhocChore(adhocChoreData);
+        showAlert(`Adhoc chore "${name}" added successfully!`, 'success');
+        closeAdhocChoreModal();
+
+        // Reload the weekly view to show the new adhoc chore
+        await loadWeeklyChores();
+
+    } catch (error) {
+        showAlert('Failed to add adhoc chore: ' + error.message, 'error');
+    }
+}
+
+// Close adhoc modal when clicking outside of it
+document.addEventListener('click', function(event) {
+    const adhocModal = document.getElementById('adhoc-chore-modal');
+    if (event.target === adhocModal) {
+        closeAdhocChoreModal();
+    }
+});

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 
 
@@ -12,6 +12,7 @@ class ChoreBase(BaseModel):
     day_of_week_2: Optional[int] = Field(None, ge=0, le=6)  # Second day for twice_weekly
     assigned_user_id: Optional[int] = None
     is_active: bool = True
+    is_adhoc: bool = False
 
 
 class ChoreCreate(ChoreBase):
@@ -28,6 +29,7 @@ class ChoreUpdate(BaseModel):
     day_of_week_2: Optional[int] = Field(None, ge=0, le=6)
     assigned_user_id: Optional[int] = None
     is_active: Optional[bool] = None
+    is_adhoc: Optional[bool] = None
 
 
 class Chore(ChoreBase):
@@ -38,3 +40,13 @@ class Chore(ChoreBase):
 
     class Config:
         from_attributes = True
+
+
+class AdhocChoreCreate(BaseModel):
+    """Schema for creating an adhoc chore with automatic completion."""
+    name: str = Field(..., min_length=1, max_length=200)
+    description: Optional[str] = None
+    user_id: int
+    completion_date: date
+    week_start: date
+    notes: Optional[str] = None

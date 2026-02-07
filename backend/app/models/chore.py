@@ -17,6 +17,7 @@ class Chore(Base):
     day_of_week_2 = Column(Integer, nullable=True)  # Second day for twice_weekly chores
     assigned_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
+    is_adhoc = Column(Boolean, default=False, nullable=False)  # True for one-off adhoc chores
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

@@ -44,6 +44,9 @@
                     <button onclick="toggleEditMode()" class="nav-link nav-button" id="edit-mode-btn">
                         <span id="edit-mode-text">Assign Chores</span>
                     </button>
+                    <button onclick="openAdhocChoreModal()" class="nav-link nav-button" id="adhoc-chore-btn">
+                        <span>+ Add Adhoc</span>
+                    </button>
                     <a href="/history" class="nav-link">History</a>
                     <a href="/admin-console" class="nav-link" id="admin-link" style="display:none;">Admin</a>
                 </nav>
@@ -182,6 +185,63 @@
                 <div class="modal-footer">
                     <button type="button" onclick="closeEditModal()" class="btn btn-secondary">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Adhoc Chore Modal -->
+    <div id="adhoc-chore-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Adhoc Chore</h2>
+                <p class="modal-subtitle">Record a one-time chore that was completed</p>
+            </div>
+            <form id="adhoc-chore-form" onsubmit="saveAdhocChore(event)">
+                <div class="form-group">
+                    <label class="form-label" for="adhoc-chore-name">Chore Name *</label>
+                    <input
+                        type="text"
+                        id="adhoc-chore-name"
+                        class="form-input"
+                        required
+                        list="adhoc-suggestions"
+                        autocomplete="off"
+                        placeholder="Start typing or select from previous adhoc chores...">
+                    <datalist id="adhoc-suggestions"></datalist>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="adhoc-chore-description">Description (Optional)</label>
+                    <textarea
+                        id="adhoc-chore-description"
+                        class="form-textarea"
+                        placeholder="Add any details about this chore..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="adhoc-chore-date">Completion Date *</label>
+                    <input type="date" id="adhoc-chore-date" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="adhoc-chore-user">Completed By *</label>
+                    <select id="adhoc-chore-user" class="form-select" required>
+                        <option value="">Select user...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="adhoc-chore-notes">Notes (Optional)</label>
+                    <textarea
+                        id="adhoc-chore-notes"
+                        class="form-textarea"
+                        placeholder="Add any notes about completion..."></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" onclick="closeAdhocChoreModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Completed Chore</button>
                 </div>
             </form>
         </div>

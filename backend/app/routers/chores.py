@@ -3,14 +3,20 @@ Chore API endpoints for managing chores in the application.
 """
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
+from sqlalchemy import func, distinct
 from typing import Optional
-from datetime import date
+from datetime import date, datetime, time
+from zoneinfo import ZoneInfo
 from app.database import get_db
 from app.models.chore import Chore
 from app.models.completion import Completion
 from app.models.user import User
-from app.schemas.chore import ChoreCreate, ChoreUpdate, Chore as ChoreResponse
+from app.schemas.chore import ChoreCreate, ChoreUpdate, Chore as ChoreResponse, AdhocChoreCreate
+from app.schemas.completion import Completion as CompletionResponse
 from app.utils.helpers import get_week_start
+from app.config import get_settings
+
+settings = get_settings()
 
 router = APIRouter(prefix="/api/chores", tags=["chores"])
 
@@ -98,6 +104,19 @@ def get_weekly_chores(
     for c in completions:
         completion_map[c.chore_id].append(c)
 
+    # Get adhoc chores that have completions this week
+    adhoc_chore_ids = [c.chore_id for c in completions if c.chore_id not in [ch.id for ch in chores]]
+    if adhoc_chore_ids:
+        adhoc_chores = db.query(Chore).filter(
+            Chore.id.in_(adhoc_chore_ids),
+            Chore.is_adhoc == True
+        ).all()
+        # Add adhoc chores to the list (will be sorted later)
+        chores.extend(adhoc_chores)
+
+    # Sort all chores (including adhoc) by name
+    chores = sorted(chores, key=lambda c: c.name.lower())
+
     # Format response
     result = []
     for chore in chores:
@@ -123,6 +142,7 @@ def get_weekly_chores(
             "day_of_week": chore.day_of_week,
             "day_of_week_2": chore.day_of_week_2,
             "assigned_user_id": chore.assigned_user_id,
+            "is_adhoc": chore.is_adhoc,  # Include adhoc flag
             "completions": completions_data  # Changed to list of completions
         })
 
@@ -237,3 +257,102 @@ def delete_chore(chore_id: int, db: Session = Depends(get_db)):
     db.delete(db_chore)
     db.commit()
     return None
+
+
+@router.get("/adhoc/names", response_model=list[str])
+def get_adhoc_chore_names(db: Session = Depends(get_db)):
+    """
+    Get a list of unique adhoc chore names for autocomplete suggestions.
+
+    Returns distinct chore names that have been used for adhoc chores.
+    """
+    # Query for distinct names of adhoc chores, ordered alphabetically
+    adhoc_names = db.query(distinct(Chore.name)).filter(
+        Chore.is_adhoc == True
+    ).order_by(Chore.name).all()
+
+    # Extract names from tuples
+    return [name[0] for name in adhoc_names]
+
+
+@router.post("/adhoc", response_model=CompletionResponse, status_code=status.HTTP_201_CREATED)
+def create_adhoc_chore(adhoc_chore: AdhocChoreCreate, db: Session = Depends(get_db)):
+    """
+    Create an adhoc (one-off) chore and automatically mark it as complete.
+
+    This endpoint creates a new chore with is_adhoc=True, is_active=False,
+    and immediately creates a completion record for it. If a chore with the
+    same name already exists as an adhoc chore, it reuses that chore instead
+    of creating a duplicate.
+
+    - **name**: Name of the adhoc chore
+    - **description**: Optional description
+    - **user_id**: ID of the user who completed the chore
+    - **completion_date**: The date the chore was completed
+    - **week_start**: The start of the week for tracking
+    - **notes**: Optional completion notes
+    """
+    # Validate user exists
+    user = db.query(User).filter(User.id == adhoc_chore.user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with id {adhoc_chore.user_id} not found"
+        )
+
+    # Check if an adhoc chore with this name already exists
+    existing_chore = db.query(Chore).filter(
+        Chore.name == adhoc_chore.name,
+        Chore.is_adhoc == True
+    ).first()
+
+    if existing_chore:
+        # Reuse existing adhoc chore
+        chore_id = existing_chore.id
+    else:
+        # Create new adhoc chore
+        new_chore = Chore(
+            name=adhoc_chore.name,
+            description=adhoc_chore.description,
+            frequency="weekly",  # Default frequency, not really used for adhoc
+            is_active=False,  # Adhoc chores are not active recurring chores
+            is_adhoc=True,
+            assigned_user_id=None  # Adhoc chores aren't assigned to anyone
+        )
+        db.add(new_chore)
+        db.flush()  # Flush to get the chore ID
+        chore_id = new_chore.id
+
+    # Create completion record
+    # Convert date to datetime in configured timezone
+    tz = ZoneInfo(settings.timezone)
+    naive_dt = datetime.combine(adhoc_chore.completion_date, time(hour=12))
+    completion_dt = naive_dt.replace(tzinfo=tz)
+
+    # Check if this adhoc chore was already completed on this date
+    existing_completion = db.query(Completion).filter(
+        Completion.chore_id == chore_id,
+        Completion.week_start == adhoc_chore.week_start,
+        func.date(Completion.completed_at) == adhoc_chore.completion_date
+    ).first()
+
+    if existing_completion:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Adhoc chore '{adhoc_chore.name}' was already completed on {adhoc_chore.completion_date}"
+        )
+
+    # Create the completion
+    db_completion = Completion(
+        chore_id=chore_id,
+        user_id=adhoc_chore.user_id,
+        completed_at=completion_dt,
+        week_start=adhoc_chore.week_start,
+        notes=adhoc_chore.notes
+    )
+
+    db.add(db_completion)
+    db.commit()
+    db.refresh(db_completion)
+
+    return db_completion

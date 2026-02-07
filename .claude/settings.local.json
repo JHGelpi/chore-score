@@ -16,7 +16,11 @@
       "Bash(python3:*)",
       "Bash(curl -s \"http://192.168.170.53:8001/static/css/styles.css\")",
       "Bash(curl -s \"http://192.168.170.53:8001/history\")",
-      "Bash(curl -s \"http://192.168.170.53:8001/static/js/history.js\")"
+      "Bash(curl -s \"http://192.168.170.53:8001/static/js/history.js\")",
+      "Bash(docker-compose exec:*)",
+      "Bash(curl -X POST http://192.168.170.53:8001/api/chores/adhoc )",
+      "Bash(curl -s http://192.168.170.53:8001/api/chores/adhoc/names)",
+      "Bash(curl -s \"http://192.168.170.53:8001/api/chores/weekly?week_start=2026-02-03\")"
     ],
     "deny": [],
     "ask": []
