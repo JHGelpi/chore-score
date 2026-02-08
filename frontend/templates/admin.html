@@ -96,6 +96,46 @@
             </div>
             <div id="chores-table-container" class="hidden"></div>
         </div>
+
+        <!-- Completions Management -->
+        <div class="card">
+            <div class="card-header">
+                <span>Completion Records Management</span>
+            </div>
+
+            <!-- Filters -->
+            <div style="padding: 1rem; border-bottom: 1px solid #e0e0e0;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div class="form-group" style="margin: 0;">
+                        <label class="form-label" style="font-size: 0.875rem;">Filter by Chore:</label>
+                        <select id="completions-chore-filter" class="form-select" onchange="loadCompletions()">
+                            <option value="">All Chores</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label class="form-label" style="font-size: 0.875rem;">Filter by User:</label>
+                        <select id="completions-user-filter" class="form-select" onchange="loadCompletions()">
+                            <option value="">All Users</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label class="form-label" style="font-size: 0.875rem;">Limit:</label>
+                        <select id="completions-limit" class="form-select" onchange="loadCompletions()">
+                            <option value="50">50 records</option>
+                            <option value="100" selected>100 records</option>
+                            <option value="200">200 records</option>
+                            <option value="500">500 records</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="completions-loading" class="loading">
+                <div class="spinner"></div>
+                <p>Loading completions...</p>
+            </div>
+            <div id="completions-table-container" class="hidden"></div>
+        </div>
     </div>
 
     <!-- Add/Edit User Modal -->

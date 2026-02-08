@@ -6,6 +6,7 @@ let users = [];
 let chores = [];
 let editingUserId = null;
 let editingChoreId = null;
+let completionsSortOrder = 'asc'; // 'asc' = oldest first, 'desc' = newest first
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
@@ -22,6 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadDashboardStats();
     await loadUsers();
     await loadChores();
+    await loadCompletions();
 });
 
 async function loadDashboardStats() {
@@ -335,5 +337,164 @@ async function deleteChoreConfirm(choreId) {
         await loadDashboardStats();
     } catch (error) {
         showAlert('Failed to delete chore: ' + error.message, 'error');
+    }
+}
+
+// Completions Management Functions
+async function loadCompletions() {
+    const loadingEl = document.getElementById('completions-loading');
+    const containerEl = document.getElementById('completions-table-container');
+
+    try {
+        loadingEl.classList.remove('hidden');
+        containerEl.classList.add('hidden');
+
+        // Get filter values
+        const choreId = document.getElementById('completions-chore-filter').value;
+        const userId = document.getElementById('completions-user-filter').value;
+        const limit = document.getElementById('completions-limit').value;
+
+        // Build query params
+        const params = { limit: parseInt(limit) };
+        if (choreId) params.chore_id = parseInt(choreId);
+        if (userId) params.user_id = parseInt(userId);
+
+        // Fetch completions
+        const completions = await api.getCompletions(params);
+
+        // Load chores and users for display (if not already loaded)
+        if (chores.length === 0) {
+            chores = await api.getChores();
+        }
+        if (users.length === 0) {
+            users = await api.getUsers();
+        }
+
+        // Populate filter dropdowns if empty
+        populateCompletionFilters();
+
+        // Sort completions by completed_at date
+        completions.sort((a, b) => {
+            const dateA = new Date(a.completed_at);
+            const dateB = new Date(b.completed_at);
+            return completionsSortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+        });
+
+        loadingEl.classList.add('hidden');
+        containerEl.classList.remove('hidden');
+
+        // Render completions table
+        if (completions.length === 0) {
+            containerEl.innerHTML = '<p style="padding: 2rem; text-align: center; color: #999;">No completion records found.</p>';
+            return;
+        }
+
+        const sortIcon = completionsSortOrder === 'asc' ? '↑' : '↓';
+        const sortLabel = completionsSortOrder === 'asc' ? 'Oldest First' : 'Newest First';
+
+        containerEl.innerHTML = `
+            <div style="overflow-x: auto;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Chore</th>
+                            <th>User</th>
+                            <th>
+                                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                    <button
+                                        onclick="toggleCompletionsSort()"
+                                        class="btn btn-sm btn-secondary"
+                                        style="padding: 0.25rem 0.5rem; font-size: 0.75rem; white-space: nowrap;">
+                                        ${sortIcon} ${sortLabel}
+                                    </button>
+                                    <span>Completed At</span>
+                                </div>
+                            </th>
+                            <th>Week Start</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${completions.map(completion => {
+                            const chore = chores.find(c => c.id === completion.chore_id);
+                            const user = users.find(u => u.id === completion.user_id);
+                            const completedDate = new Date(completion.completed_at);
+                            const formattedDate = completedDate.toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+
+                            return `
+                                <tr>
+                                    <td>${completion.id}</td>
+                                    <td>${chore ? chore.name : `Chore #${completion.chore_id}`}</td>
+                                    <td>${user ? user.name : `User #${completion.user_id}`}</td>
+                                    <td>${formattedDate}</td>
+                                    <td>${completion.week_start}</td>
+                                    <td>${completion.notes || '-'}</td>
+                                    <td>
+                                        <button onclick="deleteCompletionConfirm(${completion.id})" class="btn btn-sm btn-danger">Delete</button>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <p style="padding: 1rem; font-size: 0.875rem; color: #666;">Showing ${completions.length} records</p>
+        `;
+
+    } catch (error) {
+        loadingEl.classList.add('hidden');
+        showAlert('Failed to load completions: ' + error.message, 'error');
+    }
+}
+
+function populateCompletionFilters() {
+    // Populate chore filter
+    const choreFilter = document.getElementById('completions-chore-filter');
+    if (choreFilter.options.length === 1) { // Only has "All Chores"
+        chores.forEach(chore => {
+            const option = document.createElement('option');
+            option.value = chore.id;
+            option.textContent = chore.name;
+            choreFilter.appendChild(option);
+        });
+    }
+
+    // Populate user filter
+    const userFilter = document.getElementById('completions-user-filter');
+    if (userFilter.options.length === 1) { // Only has "All Users"
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.id;
+            option.textContent = user.name;
+            userFilter.appendChild(option);
+        });
+    }
+}
+
+function toggleCompletionsSort() {
+    completionsSortOrder = completionsSortOrder === 'asc' ? 'desc' : 'asc';
+    loadCompletions();
+}
+
+async function deleteCompletionConfirm(completionId) {
+    if (!confirm(`Are you sure you want to delete this completion record (ID: ${completionId})? This action cannot be undone.`)) {
+        return;
+    }
+
+    try {
+        await api.deleteCompletion(completionId);
+        showAlert('Completion record deleted successfully', 'success');
+        await loadCompletions();
+        await loadDashboardStats();
+    } catch (error) {
+        showAlert('Failed to delete completion: ' + error.message, 'error');
     }
 }

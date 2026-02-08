@@ -23,7 +23,11 @@
       "Bash(curl -s \"http://192.168.170.53:8001/api/chores/weekly?week_start=2026-02-03\")",
       "Bash(curl -s \"http://192.168.170.53:8001/api/chores?is_active=true&frequency=twice_weekly\")",
       "Bash(curl -X POST http://192.168.170.53:8001/api/completions -H \"Content-Type: application/json\" -d '{\n    \"\"\"\"chore_id\"\"\"\": 3,\n    \"\"\"\"user_id\"\"\"\": 4,\n    \"\"\"\"week_start\"\"\"\": \"\"\"\"2026-02-03\"\"\"\",\n    \"\"\"\"completion_date\"\"\"\": \"\"\"\"2026-02-05\"\"\"\",\n    \"\"\"\"notes\"\"\"\": \"\"\"\"Completed on Wednesday\"\"\"\"\n  }')",
-      "Bash(curl -X POST http://192.168.170.53:8001/api/completions -H \"Content-Type: application/json\" -d '{\n    \"\"\"\"chore_id\"\"\"\": 3,\n    \"\"\"\"user_id\"\"\"\": 5,\n    \"\"\"\"week_start\"\"\"\": \"\"\"\"2026-02-03\"\"\"\",\n    \"\"\"\"completion_date\"\"\"\": \"\"\"\"2026-02-08\"\"\"\",\n    \"\"\"\"notes\"\"\"\": \"\"\"\"Completed on Sunday (not assigned day)\"\"\"\"\n  }')"
+      "Bash(curl -X POST http://192.168.170.53:8001/api/completions -H \"Content-Type: application/json\" -d '{\n    \"\"\"\"chore_id\"\"\"\": 3,\n    \"\"\"\"user_id\"\"\"\": 5,\n    \"\"\"\"week_start\"\"\"\": \"\"\"\"2026-02-03\"\"\"\",\n    \"\"\"\"completion_date\"\"\"\": \"\"\"\"2026-02-08\"\"\"\",\n    \"\"\"\"notes\"\"\"\": \"\"\"\"Completed on Sunday (not assigned day)\"\"\"\"\n  }')",
+      "Bash(curl -s \"http://192.168.170.53:8001/api/completions?chore_id=3\")",
+      "Bash(curl -s \"http://192.168.170.53:8001/api/users\")",
+      "Bash(curl -s \"http://192.168.170.53:8001/static/js/admin.js\")",
+      "Bash(curl -s \"http://192.168.170.53:8001/admin-console\")"
     ],
     "deny": [],
     "ask": []
