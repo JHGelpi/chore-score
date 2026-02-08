@@ -7,7 +7,7 @@ let chores = [];
 let editingUserId = null;
 let editingChoreId = null;
 let editingCompletionId = null;
-let completionsSortOrder = 'asc'; // 'asc' = oldest first, 'desc' = newest first
+let completionsSortOrder = 'desc'; // 'asc' = oldest first, 'desc' = newest first
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {

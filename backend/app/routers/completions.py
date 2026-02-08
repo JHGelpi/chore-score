@@ -96,16 +96,25 @@ def mark_chore_complete(completion: CompletionCreate, db: Session = Depends(get_
     completion_data = completion.model_dump(exclude={'completion_date'})
     db_completion = Completion(**completion_data)
 
-    # Set completed_at to the specific date if provided, otherwise use current time
-    completion_dt = None
+    # Set completed_at to current time (will use the database default with timezone)
+    # If completion_date is provided, we still use current time but validate against that date
+    completion_dt = db_completion.completed_at
+
+    # If completion_date was provided, validate it matches today or is in the past
     if completion.completion_date:
-        # Convert date to datetime in Eastern timezone (use noon to be in middle of day)
+        # Get the current datetime in the configured timezone
         tz = ZoneInfo(settings.timezone)
-        naive_dt = datetime.combine(completion.completion_date, time(hour=12))
-        completion_dt = naive_dt.replace(tzinfo=tz)
-        db_completion.completed_at = completion_dt
-    else:
-        completion_dt = db_completion.completed_at
+        now = datetime.now(tz)
+
+        # Check if completion_date is in the future
+        if completion.completion_date > now.date():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot complete a chore in the future"
+            )
+
+        # Use completion_date for validation purposes
+        completion_dt = now  # This will be set by the database default
 
     # Check if this chore was already completed on this specific date
     # For twice-weekly chores, we allow multiple completions per week, but not on the same day

@@ -324,10 +324,16 @@ def create_adhoc_chore(adhoc_chore: AdhocChoreCreate, db: Session = Depends(get_
         chore_id = new_chore.id
 
     # Create completion record
-    # Convert date to datetime in configured timezone
+    # Use current timestamp (database will set this via server_default)
     tz = ZoneInfo(settings.timezone)
-    naive_dt = datetime.combine(adhoc_chore.completion_date, time(hour=12))
-    completion_dt = naive_dt.replace(tzinfo=tz)
+    now = datetime.now(tz)
+
+    # Validate completion_date is not in the future
+    if adhoc_chore.completion_date > now.date():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot complete a chore in the future"
+        )
 
     # Check if this adhoc chore was already completed on this date
     existing_completion = db.query(Completion).filter(
@@ -342,11 +348,10 @@ def create_adhoc_chore(adhoc_chore: AdhocChoreCreate, db: Session = Depends(get_
             detail=f"Adhoc chore '{adhoc_chore.name}' was already completed on {adhoc_chore.completion_date}"
         )
 
-    # Create the completion
+    # Create the completion (completed_at will be set by database default to current timestamp)
     db_completion = Completion(
         chore_id=chore_id,
         user_id=adhoc_chore.user_id,
-        completed_at=completion_dt,
         week_start=adhoc_chore.week_start,
         notes=adhoc_chore.notes
     )
