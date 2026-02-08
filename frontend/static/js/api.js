@@ -130,6 +130,13 @@ class APIClient {
         return this.request(`/completions${queryString ? '?' + queryString : ''}`);
     }
 
+    async updateCompletion(completionId, completionData) {
+        return this.request(`/completions/${completionId}`, {
+            method: 'PUT',
+            body: JSON.stringify(completionData)
+        });
+    }
+
     async deleteCompletion(completionId) {
         return this.request(`/completions/${completionId}`, {
             method: 'DELETE'

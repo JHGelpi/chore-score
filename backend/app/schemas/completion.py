@@ -20,6 +20,14 @@ class CompletionCreate(BaseModel):
     notes: Optional[str] = None
 
 
+class CompletionUpdate(BaseModel):
+    """Schema for updating an existing completion."""
+    user_id: Optional[int] = None
+    completed_at: Optional[datetime] = None
+    week_start: Optional[date] = None
+    notes: Optional[str] = None
+
+
 class Completion(CompletionBase):
     """Schema for completion response."""
     id: int

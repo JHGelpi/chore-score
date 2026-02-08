@@ -6,6 +6,7 @@ let users = [];
 let chores = [];
 let editingUserId = null;
 let editingChoreId = null;
+let editingCompletionId = null;
 let completionsSortOrder = 'asc'; // 'asc' = oldest first, 'desc' = newest first
 
 // Initialize
@@ -432,7 +433,7 @@ async function loadCompletions() {
                             return `
                                 <tr>
                                     <td>${completion.id}</td>
-                                    <td>${chore ? chore.name : `Chore #${completion.chore_id}`}</td>
+                                    <td><a href="#" onclick="editCompletion(${completion.id}); return false;" style="color: #4A90E2; text-decoration: underline; cursor: pointer;">${chore ? chore.name : `Chore #${completion.chore_id}`}</a></td>
                                     <td>${user ? user.name : `User #${completion.user_id}`}</td>
                                     <td>${formattedDate}</td>
                                     <td>${completion.week_start}</td>
@@ -496,5 +497,88 @@ async function deleteCompletionConfirm(completionId) {
         await loadDashboardStats();
     } catch (error) {
         showAlert('Failed to delete completion: ' + error.message, 'error');
+    }
+}
+
+// Completion Edit Modal Functions
+async function editCompletion(completionId) {
+    // Get completions list to find the specific completion
+    const params = { limit: 10000 }; // Get all to find this one
+    const completions = await api.getCompletions(params);
+    const completion = completions.find(c => c.id === completionId);
+
+    if (!completion) {
+        showAlert('Completion record not found', 'error');
+        return;
+    }
+
+    editingCompletionId = completionId;
+
+    // Get the chore for this completion
+    const chore = chores.find(c => c.id === completion.chore_id);
+
+    // Populate form
+    document.getElementById('completion-chore-name').value = chore ? chore.name : `Chore #${completion.chore_id}`;
+
+    // Populate user dropdown
+    const userSelect = document.getElementById('completion-user');
+    userSelect.innerHTML = '<option value="">Select user...</option>';
+    users.forEach(user => {
+        const option = document.createElement('option');
+        option.value = user.id;
+        option.textContent = user.name;
+        if (user.id === completion.user_id) {
+            option.selected = true;
+        }
+        userSelect.appendChild(option);
+    });
+
+    // Parse completed_at datetime
+    const completedAt = new Date(completion.completed_at);
+    const dateStr = completedAt.toISOString().split('T')[0]; // YYYY-MM-DD
+    const timeStr = completedAt.toTimeString().slice(0, 5); // HH:MM
+
+    document.getElementById('completion-date').value = dateStr;
+    document.getElementById('completion-time').value = timeStr;
+    document.getElementById('completion-week-start').value = completion.week_start;
+    document.getElementById('completion-notes').value = completion.notes || '';
+
+    // Show modal
+    document.getElementById('completion-modal').classList.add('active');
+}
+
+function closeCompletionModal() {
+    document.getElementById('completion-modal').classList.remove('active');
+    editingCompletionId = null;
+}
+
+async function saveCompletion(event) {
+    event.preventDefault();
+
+    if (!editingCompletionId) return;
+
+    // Get form values
+    const userId = parseInt(document.getElementById('completion-user').value);
+    const dateStr = document.getElementById('completion-date').value;
+    const timeStr = document.getElementById('completion-time').value;
+    const notes = document.getElementById('completion-notes').value || null;
+
+    // Combine date and time into ISO datetime string
+    const completedAt = new Date(`${dateStr}T${timeStr}`).toISOString();
+
+    const completionData = {
+        user_id: userId,
+        completed_at: completedAt,
+        notes: notes
+    };
+
+    try {
+        await api.updateCompletion(editingCompletionId, completionData);
+        showAlert('Completion updated successfully', 'success');
+        closeCompletionModal();
+        await loadCompletions();
+        await loadDashboardStats();
+    } catch (error) {
+        showAlert('Failed to update completion: ' + error.message, 'error');
     }
 }

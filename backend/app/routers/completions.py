@@ -11,7 +11,7 @@ from app.database import get_db
 from app.models.completion import Completion
 from app.models.chore import Chore
 from app.models.user import User
-from app.schemas.completion import CompletionCreate, Completion as CompletionResponse
+from app.schemas.completion import CompletionCreate, CompletionUpdate, Completion as CompletionResponse
 from app.utils.helpers import get_week_start, get_current_week_start
 from app.config import get_settings
 
@@ -124,6 +124,42 @@ def mark_chore_complete(completion: CompletionCreate, db: Session = Depends(get_
             )
 
     db.add(db_completion)
+    db.commit()
+    db.refresh(db_completion)
+    return db_completion
+
+
+@router.put("/{completion_id}", response_model=CompletionResponse)
+def update_completion(completion_id: int, completion: CompletionUpdate, db: Session = Depends(get_db)):
+    """
+    Update an existing completion record.
+
+    - **completion_id**: The ID of the completion record to update
+    - **user_id**: New user ID (optional)
+    - **completed_at**: New completion datetime (optional)
+    - **week_start**: New week start date (optional)
+    - **notes**: New notes (optional)
+    """
+    db_completion = db.query(Completion).filter(Completion.id == completion_id).first()
+    if not db_completion:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Completion record with id {completion_id} not found"
+        )
+
+    # Validate user if changing
+    if completion.user_id is not None:
+        user = db.query(User).filter(User.id == completion.user_id).first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"User with id {completion.user_id} not found"
+            )
+
+    # Update fields
+    for field, value in completion.model_dump(exclude_unset=True).items():
+        setattr(db_completion, field, value)
+
     db.commit()
     db.refresh(db_completion)
     return db_completion
