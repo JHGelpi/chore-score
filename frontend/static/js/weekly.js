@@ -156,59 +156,64 @@ function renderWeeklyGrid() {
     // Function to process and group chores
     const processChores = (chores, choresByDay) => {
         chores.forEach(chore => {
-            // For each chore, determine which days it should appear on
-            let daysToShow = [];
+            // Check if this chore has any completions
+            const hasCompletions = chore.completions && chore.completions.length > 0;
 
-            if (chore.frequency === 'twice_weekly') {
-                // Show on both assigned days
-                if (chore.day_of_week !== null && chore.day_of_week !== undefined) {
-                    daysToShow.push(chore.day_of_week);
-                }
-                if (chore.day_of_week_2 !== null && chore.day_of_week_2 !== undefined) {
-                    daysToShow.push(chore.day_of_week_2);
-                }
-            } else if (chore.day_of_week !== null && chore.day_of_week !== undefined) {
-                // Show on single assigned day
-                daysToShow.push(chore.day_of_week);
+            if (hasCompletions) {
+                // If completed, show ONLY on the days it was actually completed
+                chore.completions.forEach(completion => {
+                    const completedDate = new Date(completion.completed_at);
+                    const completedDayOfWeek = completedDate.getDay();
+                    const dayIndex = completedDayOfWeek === 0 ? 6 : completedDayOfWeek - 1;
+
+                    // Create a chore object for this completion
+                    const choreForDay = {
+                        ...chore,
+                        is_completed: true,
+                        completed_at: completion.completed_at,
+                        completed_by: completion.completed_by,
+                        completed_by_name: completion.completed_by_name,
+                        completion_notes: completion.notes,
+                        completion_id: completion.id
+                    };
+
+                    choresByDay[dayIndex].push(choreForDay);
+                });
             } else {
-                // No assigned day - show on all days or only on completed days
-                if (chore.completions && chore.completions.length > 0) {
-                    // Show only on days where it was completed
-                    chore.completions.forEach(completion => {
-                        const completedDate = new Date(completion.completed_at);
-                        const completedDayOfWeek = completedDate.getDay();
-                        const dayIndex = completedDayOfWeek === 0 ? 6 : completedDayOfWeek - 1;
-                        daysToShow.push(dayIndex);
-                    });
+                // If NOT completed, show on assigned days (or all days if no assignment)
+                let daysToShow = [];
+
+                if (chore.frequency === 'twice_weekly') {
+                    // Show on both assigned days
+                    if (chore.day_of_week !== null && chore.day_of_week !== undefined) {
+                        daysToShow.push(chore.day_of_week);
+                    }
+                    if (chore.day_of_week_2 !== null && chore.day_of_week_2 !== undefined) {
+                        daysToShow.push(chore.day_of_week_2);
+                    }
+                } else if (chore.day_of_week !== null && chore.day_of_week !== undefined) {
+                    // Show on single assigned day
+                    daysToShow.push(chore.day_of_week);
                 } else {
-                    // Not completed, show on all days
+                    // No assigned day - show on all days
                     daysToShow = [0, 1, 2, 3, 4, 5, 6];
                 }
-            }
 
-            // Add chore to each day it should appear on
-            daysToShow.forEach(dayIndex => {
-                // For this day, check if there's a completion
-                const completionForDay = chore.completions.find(c => {
-                    const completedDate = new Date(c.completed_at);
-                    const completedDayOfWeek = completedDate.getDay();
-                    const compDayIndex = completedDayOfWeek === 0 ? 6 : completedDayOfWeek - 1;
-                    return compDayIndex === dayIndex;
+                // Add incomplete chore to each assigned day
+                daysToShow.forEach(dayIndex => {
+                    const choreForDay = {
+                        ...chore,
+                        is_completed: false,
+                        completed_at: null,
+                        completed_by: null,
+                        completed_by_name: null,
+                        completion_notes: null,
+                        completion_id: null
+                    };
+
+                    choresByDay[dayIndex].push(choreForDay);
                 });
-
-                // Create a chore object specific to this day
-                const choreForDay = {
-                    ...chore,
-                    is_completed: !!completionForDay,
-                    completed_at: completionForDay?.completed_at,
-                    completed_by: completionForDay?.completed_by,
-                    completed_by_name: completionForDay?.completed_by_name,
-                    completion_notes: completionForDay?.notes,
-                    completion_id: completionForDay?.completion_id
-                };
-
-                choresByDay[dayIndex].push(choreForDay);
-            });
+            }
         });
     };
 
