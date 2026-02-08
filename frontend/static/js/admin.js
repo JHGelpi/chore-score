@@ -397,10 +397,10 @@ async function loadCompletions() {
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Chore</th>
-                            <th>User</th>
-                            <th>
+                            <th style="vertical-align: bottom;">ID</th>
+                            <th style="vertical-align: bottom;">Chore</th>
+                            <th style="vertical-align: bottom;">User</th>
+                            <th style="vertical-align: bottom;">
                                 <div style="display: flex; flex-direction: column; gap: 0.25rem;">
                                     <button
                                         onclick="toggleCompletionsSort()"
@@ -411,9 +411,9 @@ async function loadCompletions() {
                                     <span>Completed At</span>
                                 </div>
                             </th>
-                            <th>Week Start</th>
-                            <th>Notes</th>
-                            <th>Actions</th>
+                            <th style="vertical-align: bottom;">Week Start</th>
+                            <th style="vertical-align: bottom;">Notes</th>
+                            <th style="vertical-align: bottom;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
