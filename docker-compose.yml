@@ -1,6 +1,6 @@
-
 services:
   db:
+    restart: unless-stopped
     image: postgres:15-alpine
     container_name: chores_db
     environment:
@@ -20,6 +20,7 @@ services:
       retries: 5
 
   backend:
+    restart: unless-stopped
     build:
       context: ./backend
       dockerfile: Dockerfile
